@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot UI</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Chatbot Interface</h1>
+        
+        <div id="add-website-section">
+            <h2>Add Website</h2>
+            <input type="text" id="website-url" placeholder="Enter website URL">
+            <button onclick="addWebsite()">Add Website</button>
+        </div>
+        
+        <div id="chat-section">
+            <h2>Chat with Bot</h2>
+            <div id="chat-log"></div>
+            <input type="text" id="user-input" placeholder="Ask me anything..." onkeydown="handleKeyDown(event)">
+            <button onclick="sendChat()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // Add website to the index
+        async function addWebsite() {
+            const url = document.getElementById('website-url').value;
+            if (!url) {
+                alert("Please enter a website URL.");
+                return;
+            }
+
+            const response = await fetch('/add_website/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ url: url }),
+            });
+
+            const data = await response.json();
+            alert(data.message);
+        }
+
+        // Send user query to the chatbot
+        async function sendChat() {
+            const prompt = document.getElementById('user-input').value;
+            if (!prompt) {
+                alert("Please enter a prompt.");
+                return;
+            }
+
+            const chatLog = document.getElementById('chat-log');
+            chatLog.innerHTML += `<div><b>You:</b> ${prompt}</div>`;
+
+            const response = await fetch('/chat/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt: prompt }),
+            });
+
+            const data = await response.json();
+            chatLog.innerHTML += `<div><b>Chatbot:</b> ${data.response}</div>`;
+            document.getElementById('user-input').value = '';
+        }
+
+        // Handle pressing Enter key to send the chat
+        function handleKeyDown(event) {
+            if (event.key === 'Enter') {
+                sendChat();
+            }
+        }
+    </script>
+</body>
+</html>
